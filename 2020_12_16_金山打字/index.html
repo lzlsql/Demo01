@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+	</head>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		
+		.obox {
+			width: 100%;
+			height: 100vh;
+			background: url(img/dz2.jpg) 0 0 / cover;
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.obox img {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		
+		.find {
+			width: 100%;
+			height: 50px;
+			background: black;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			z-index: 10;
+		}
+		
+		.btn {
+			display: block;
+			border: none;
+			width: 120px;
+			height: 40px;
+			text-align: center;
+			line-height: 40px;
+			margin: 5px 20px;
+			outline: none;
+			background: url(img/stop.png) 0 0 / cover;
+			cursor: pointer;
+		}
+		
+		.list {
+			bottom: 50px;
+			right: 0;
+			list-style: none;
+			position: absolute;
+		}
+		
+		.list li {
+			margin-left: 20px;
+			height: 160px;
+			width: 120px;
+			float: left;
+			position: relative;
+			text-align: center;
+		}
+		
+		.list h3 {
+			position: absolute;
+			top: 35px;
+			left: 41px;
+		}
+		
+		.list p {
+			display: block;
+			width: 40px;
+			top: 60px;
+			left: 50%;
+			margin-left: -20px;
+			height: 40px;
+			position: absolute;
+			color: orangered;
+			font-size: 25px;
+		}
+		
+		.list img {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+		}
+		.obox .sb{
+			width: 520px;
+			height: 414px;
+			position: absolute;
+			/*top: -60px;*/
+			top: -414px;
+			left:50%;
+			margin-left: -260px;
+			transition: all 2s; 
+		}
+	</style>
+	<script src="js/move.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		document.addEventListener("DOMContentLoaded", function() {
+			
+			var obox = document.querySelector(".obox");
+			var list = document.querySelector(".list");
+			var btn = document.querySelector(".btn");
+			var num = list.querySelectorAll("p");
+			var sb = document.querySelector(".sb");
+			var arr = new Array();
+			var arr2 = new Array();
+			var difficulty = 3;
+			var speed = 1;
+			var Code=0;
+			var score = 0;
+			var score2 = 1;
+			var tirem = null;
+			
+			//随即生成图片,把图片放进数组当中
+			function random1(){
+				
+				for(var i = 0; i < difficulty; i++) {
+					var Code = Math.floor(Math.random() * 26) + "A".charCodeAt();
+					var b = String.fromCharCode(Code);
+					if(arr2.length!=0){
+						//console.log(arr2);
+						if(arr2.indexOf(b) == -1){
+							arr.push(b);
+						}else{
+							difficulty=1;
+							random1();
+						}
+					}else if(arr2.length<=0){
+						if(arr.indexOf(b) == -1) {
+							arr.push(b);
+						} else {
+							i--;
+						}	
+					}
+				}
+				place();
+			}
+			
+			
+			
+			
+			//随机生成图片位置
+			function place(){
+				
+				while(arr.length>0){
+					var a = Math.floor(Math.random() * 90);
+					var img = document.createElement("img");
+					var b = arr.pop();
+					arr2.push(b);
+					img.name=b;
+					img.src = "img/" + b + ".png";
+					img.style.left = a + "%";
+					obox.appendChild(img);
+				}
+				
+			}
+			
+			
+			
+			//闯关失败重置样式
+			function  reset(e){
+				var e=e||event;
+				if(e.keyCode==13){
+					arr=[];
+					arr2=[];
+					difficulty=3;
+					score=0;
+					sb.style.top=-414+"px";
+					num[2].innerHTML=0;
+					num[1].innerHTML=0;
+					num[0].innerHTML=1;
+					btn.style.cursor="pointer";
+					btn.onclick = btnon;
+					document.onkeyup="";
+					var c = obox.querySelectorAll("img");
+					for(var j = 4; j < c.length; j++){
+						obox.removeChild(c[j]);
+					}
+					
+				}
+			}
+
+
+			//判断键盘点击的时哪一个字母；
+			function decide(e){
+				var e = e || event;
+				var keyc =String.fromCharCode(e.keyCode);
+				var imgo = obox.querySelectorAll("img");
+				//for(var i=0;i<arr2.length;i++){
+					if(arr2.indexOf(keyc) != -1){
+						for(var j = 4; j < imgo.length; j++){
+							if(imgo[j].name==keyc){
+								obox.removeChild(imgo[j]);
+								var z =arr2.indexOf(keyc);
+								arr2.splice(z,1);
+								score++;
+								if(score>=10){
+									sb.src="img/cg.png";
+									sb.style.top=-60+"px";
+									document.onkeyup=next;
+									clearInterval(tirem);
+								}
+								num[2].innerHTML=score;
+								difficulty=1;
+								random1();
+							}
+						}
+					}else{
+						var z = num[1].innerHTML;
+						num[1].innerHTML=parseInt(z)+1;
+						if(z>=5){
+							num[1].innerHTML=5;
+							sb.style.top=-60+"px";
+							sb.src="img/sp1.png";
+							document.onkeyup=reset;
+							clearInterval(tirem);
+						}
+						
+					}
+				//}
+			}
+			
+			
+			//下一关
+			function next(e){
+				var e = e||event;
+				if(e.keyCode==13){
+					var c = obox.querySelectorAll("img");
+					for(var i =4 ;i<c.length;i++){
+						obox.removeChild(c[i]);
+					}
+					score=0;
+					score2++;
+					num[0].innerHTML=score2;
+					speed+=1;
+					difficulty=parseInt(score2+2);
+					sb.style.top=-414+"px";
+					arr=[];
+					arr2=[];
+					setTimeout(function(){
+						random1();
+						tirem=setInterval(leen, 30);
+						document.onkeyup=decide;
+					},10)
+				}
+			}
+			//设置定时器
+			function leen() {
+					var against = num[1].innerHTML ;
+					var oimg = obox.querySelectorAll("img");
+					for(var i = 4; i < oimg.length; i++) {
+						var top=oimg[i].offsetTop + speed;
+						oimg[i].style.top = top + "px";
+						
+						//当图片超过屏幕高度时，失分+1
+						if(top >= obox.offsetHeight-50){
+							obox.removeChild(oimg[i]);
+							against++;
+							if(against>=4){
+								against=5;
+								sb.style.top=-60+"px";
+								sb.src="img/sp1.png";
+								document.onkeyup=reset;
+								clearInterval(tirem);
+							}else{
+								difficulty=1;
+								random1();
+							}
+						}
+					}
+					num[1].innerHTML=against;
+					
+				}
+
+
+			btn.onclick = btnon;
+			//点击按钮开始游戏
+			function btnon() {
+				btn.onclick="";
+				btn.style.cursor = "not-allowed";
+				random1();
+				document.onkeyup=decide;
+				//定时器，图片往下落
+				tirem=setInterval(leen, 30);
+					
+			}
+		})
+		
+	</script>
+
+	<body>
+		<div class="obox">
+			<img src="img/sp1.png" class="sb" >
+			<ul class="list">
+				<li>
+					<img src="img/fs.png"  />
+					<h3>关卡</h3>
+					<p>1</p>
+				</li>
+				<li>
+					<img src="img/fs.png" />
+					<h3>失分</h3>
+					<p>0</p>
+				</li>
+				<li>
+					<img src="img/fs.png" />
+					<h3>分数</h3>
+					<p>0</p>
+				</li>
+			</ul>
+			<div class="find">
+				<button class="btn">开始游戏</button>
+			</div>
+		</div>
+	</body>
+
+</html>
